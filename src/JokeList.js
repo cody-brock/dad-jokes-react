@@ -1,37 +1,58 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import Joke from './Joke';
+import './JokeList.css';
 
 class JokeList extends Component {
-  // constructor(props) {
-  //   super(props)
-  //   this.state = ({
-
-  //   })
-  // }
+  static defaultProps = {
+    numJokesToGet: 10
+  }
+  constructor(props) {
+    super(props)
+    this.state = {
+      jokes: []
+    }
+  }
 
   async addDadJokes() {
     let jokeArray = [];
-    for (let i = 0; i < 10; i++) {
-      let jokeRes = await axios.get(`https://icanhazdadjoke.com/`, {headers: {Accept: 'application/json'}});
-      let newJoke = {id: jokeRes.data.id, joke: jokeRes.data.joke}
-      // console.log('newJoke: ', newJoke);
-      jokeArray.push(newJoke);
+    while (jokeArray.length < this.props.numJokesToGet) {
+      let res = await axios.get(`https://icanhazdadjoke.com/`, {
+        headers: {Accept: 'application/json'}
+      });
+      jokeArray.push(res.data.joke);
+      // console.log(jokeArray);
     }
-    localStorage.setItem('dad-jokes', JSON.stringify(jokeArray));
+    this.setState({ jokes: jokeArray });
   }
 
   componentDidMount() {
-    if (localStorage.getItem('dad-jokes') === null) {
-      console.log('adding dad-jokes to local storage!');
-      this.addDadJokes();
-    } else {
-      console.log('dad-jokes is already in local storage.  No change.');
-    }
+    // if (localStorage.getItem('dad-jokes') === null) {
+    //   console.log('adding dad-jokes to local storage!');
+    //   this.addDadJokes();
+    // } else {
+    //   console.log('dad-jokes is already in local storage.  No change.');
+    // }
+    this.addDadJokes();
   }
 
   render() {
+    const jokesRender = this.state.jokes.map((j) => (
+      <Joke 
+        jokeText={j}
+      />
+    ))
     return(
-      <h1>JokeList here</h1>
+      <div className='JokeList'>
+        <div className='JokeList-sidebar'>
+          <h1 className='JokeList-title'>
+            Dad Jokes
+          </h1>
+          <img src='https://assets.dryicons.com/uploads/icon/svg/8927/0eb14c71-38f2-433a-bfc8-23d9c99b3647.svg' />
+          <button className='JokeList-getmore'>New Jokes</button>
+        </div>
+        <div className='JokeList-jokes'>{jokesRender}</div>
+      </div>
     )
   }
 }
